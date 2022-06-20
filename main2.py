@@ -1,5 +1,5 @@
 from flask import Flask, request, render_template
-from utils import load_name_candidates, load_candidates_from_json, page_profile
+from utils import load_candidates, load_candidates_id, get_candidates_by_name, get_candidates_by_skill
 
 app = Flask(__name__)
 
@@ -7,20 +7,28 @@ app = Flask(__name__)
 @app.route("/")
 def pages_index():
     """ Главная страница """
-    return render_template("list.html", name1=load_candidates_from_json(1), name2=load_candidates_from_json(2),
-                           name3=load_candidates_from_json(3), name4=load_candidates_from_json(4),
-                           name5=load_candidates_from_json(5), name6=load_candidates_from_json(6),
-                           name7=load_candidates_from_json(7))
+    candidates: list[dict] = load_candidates()
+    return render_template("list.html", candidates=candidates)
 
 
-@app.route("/candidates/<int:index>")
+@app.route("/candidate/<int:index>")
 def pages_profile(index):
-    return render_template("single.html", index=page_profile(index))
+    candidate = load_candidates_id(index)
+    # if not candidate:
+    #     return "Кандидат не найден"
+    return render_template("single.html", candidate=candidate)
 
 
-# @app.route('/')
-# def index():
-#     return render_template("list.html", name="Adela Hendricks")
+@app.route("/search/<candidate_name>")
+def pages_search(candidate_name):
+    candidates = get_candidates_by_name(candidate_name)
+    return render_template("search.html", candidates=candidates)
+
+
+@app.route("/skill/<skill_name>")
+def pages_skill(skill_name):
+    candidates = get_candidates_by_skill(skill_name)
+    return render_template("skill.html", skill=skill_name, candidates=candidates)
 
 
 app.run()
